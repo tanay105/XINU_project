@@ -1,0 +1,66 @@
+3) No, printtos does not show the local variables which are expected to located below the top of the stack.
+
+It is due to the reason that the compiler optimisation was enabled. Once we disable it, the local variables are now located below the top of stack. it is done to make the code run faster by decreasing the compilation cost.
+
+2)
+
+the code make sure to call printtos from main function. Also, the difference in the 2 stack pointer values before and after calling printtos 
+are.
+
+	Before ---> 0x00ffeff4
+	After ---> 0x00ffefec
+
+
+|	 |
+| main	 |--> after printtos() call = 0x00ffeff4
+|  esp	 |    TOp of stack before printtos
+|________|
+|	 |
+| return |
+| addr   |		
+|________|
+|        |
+|        |
+|  ebp   |
+|        |
+|________|--> Before printtos() call = 0x00ffefec
+		TOp of stack after printtos
+
+1)
+
+		
+		|				|
+		|				|
+		|	free mem		|	
+		|				|
+		|-------------------------------- Frame pointer of main: 0x00ffeff8 
+		|				|
+		|       main stack frame	| main stack limit : 0x00ffdffc                                    
+		|	     			|
+		|------------------------------	| Stack pointer of main: 0x00ffef90 
+		|	   stack		|		
+		|				|
+		--------------------------------|				
+		|				|
+		|				
+						|
+		|	     heap
+						|
+		|
+		--------------------------------|  points to bss: 0x00026c34 		
+		|				|
+		|				|
+		|	    .bss		|
+		|				|	
+		|-------------------------------   points to end of data:  0x0001e5b8
+		|				|
+		|			        |
+		|	    .data		|	
+		|				|
+		|				|		
+		--------------------------------|  points to end of text:  0x000190c3 	
+		|	    .text               |
+		|				|
+		|------------------------------ |    0x00000000
+
+
