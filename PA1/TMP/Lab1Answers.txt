@@ -1,0 +1,61 @@
+								Additional Questions
+								====================
+
+
+1) What are the advantages and disadvantages of each of the two scheduling policies? Also, give the advantages and disadvantages of the round robin scheduling policy originally implemented in Xinu.
+
+
+Ans) All the above mentioned 3 schedulers have there own advantages and disadvantages. Let's list the pros and cons for each scheduler one by one:
+
+Linux Scheduler:
+-----------------
+
+Advantages:
+* It accounts for process priority. Thus, it gives more time for processes with higher priority.
+* It does not randomly selects any process and runs for the same time as the process with highest priority in the ready queue.
+* All in all, it is the best scheduler out of the three as it makes sure all the processes that has been created, runs.
+* It doesn't let the process with lowest priority starve by running process with highest priority completely.
+
+Disadvantages:
+* It is not very performance effective scheudler as the scheduler takes time to schedule the next process by calculating all the parameters needed for scheduling like goodness, etc.
+* definitely more memory intensive as well, as it needs more information about each process to schedule processes every time.
+
+
+
+Exponential Distribution Scheduler:
+-----------------------------------
+
+Advantages:
+* Prevents starvation of any process for longer period of time as processes are scheudle on basis of a random number.
+* All the processes get scheduled using the random number thus giving fair opportunity to everyone to run and no differentiation is done on bsis of priority.
+* Employing the use of random number based scheduling prevents starvation from occuring.
+
+
+Disadvantages:
+* Processes might have to starve as the scheduling is dependent on one random number. So, if random number is always higher than the lowest priority process, then it might never get scheduled.
+* For same value of Lambda, the scheduling order will always be different for the processes and thus there is no uniformity.
+* Selecting Lambda is very crucial and the scheduling can go wrong by selecting extreme values of Lambda.
+
+
+
+Highesht Priority Scheduler (Xinu's round robin scheduling policy):
+-------------------------------------------------------------------
+
+Advantages:
+* Always schedules process with highest priority first and thus maintaining the scheduling order according to priority
+* The scehduler has the ability to handle cases with processes with same priority i.e. follows round robin approach
+* It has the highest performace while rescheduling new processes as it just needs to the next highest priority process which is always at the end of queue.
+
+Disadvantages:
+* It causes starvation for processes with lower priority and runs them after all the processes with highest priority have yielded.
+* Deos not account for fairness while running processes.
+
+2) Describe the way each of the scheduler affects the NULL process?
+
+Ans) Null process is created in Xinu to be present in the running queue to capture all the exceptions and use it's stack memory to store all the data generated from execetions. Thus, it meant to always stay in the ready queue.
+
+Xinu's Round robin scheduler : NULL process will never be dequeued from the running queue. Hence, it will not get executed.
+
+Exponential Distribution Scheduler: When there are no processes in ready queue apart from Null process (NULLPROC), then it will get scheduled.
+
+Linux Based Scheduler: When there is only Null process in the ready queue, the maximum goodness will be zero and thus it will never get schedued.
