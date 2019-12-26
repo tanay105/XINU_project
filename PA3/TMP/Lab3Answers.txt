@@ -1,0 +1,75 @@
+1.1 )
+
+One of the other approach that can be used for solving priority inversion problem is by using the random boosting technique. This technique is predominantly used in solving deadlock problems caused because of priority inversion in Windows operatiing systems. The priorities of the processes which are holding the hold are boosted randomly so that they can finish their tasks quickly and thus leave the critical section as soon as possible. Once the quantum if completed and the process is still not exited, the process will get another chance to complete and exit when it gets scheduled again.
+
+[Reference: https://en.wikipedia.org/wiki/Random_boosting]
+
+
+1.2 )
+
+There are 3 processes that we are creating with priorities 20, 35 and 50.
+
+The order of starting is in such a way that we start the lowest priority process first, then the middle priority process and then the highest priority process.
+
+
+Test Using Semaphores:
+
+When process A is released, the process will get the semaphore and will decrement the count by 1 and make it 0. THen, when B is released, it will starting printing the characters, and when main is scheduled again it will release process C, which is the highest priority process. Now, C will try to acquire the semaphore but the count is 0, so it has to wait in the wait list. Now, since there is a higher priority process still in the system, a lower priority process (B) is running. This is the problem of priority inversion. Now, when process A completes, then only process C will be schduled. But the lower priority process will still be executing before C gets scheduled.
+
+Test Using Locks:
+
+When process A is release, the process will get the lock and will block other processes from taking the lock. Then, when B is released, it will start printing the characters, and when main is scheduled again ti will release process C, which is the highest priority process. Now, C will try to acquired the lock but since already A has the lock, it will now be put in wait state. But, since we have priority inheritance in place, the priority of A will be ramped up to the priority of process C. So, the scheduler will always schedule the process A (as it has the priority of C = 50 now). Thus, the process B will not be scheduled until A completes the task. When A completes the task, process C will be put in ready list from wait list and the process C will start executing. Once it completes then the process B will get the chance to proceed further. Thus, the priority inversion problem is solved here by priority inheritance.
+
+
+Test using semaphores first
+Starting process A
+  process A: acquired sem, sleep 10
+Starting process B
+  process B: starting to print chars
+PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+Starting process C
+PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+  process B: ending to print chars
+  process A: to release sem
+  process C: acquired sem, sleep 10
+  process C: to release sem
+
+***************************
+
+Test using locks first
+Starting process A
+  process A: acquired sem, sleep 10
+Starting process B
+  process B: starting to print chars
+PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+Starting process C
+  process A: to release sem
+  process C: acquired sem, sleep 10
+  process C: to release sem
+PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+  process B: ending to print chars
+
+***************************
+
+
+2. )
+
+Synchronization issue detection:
+
+Let's take an excerpt from the code given to us form the buffer_add function:
+
+    memcpy (buf->buf + buf->len, txt, size);
+    buf->len += size;
+    buf->buf[buf->len] = '\0';
+
+The psuedo-code given to us, says that the readers are trying to update the value of the buffer. 
+
+Since multiple reader processes can be given the lock at the same time, then all the readers which are executing the critical section can update the buffer using the above 3 lines from the buffer_add function.
+
+Now, let's consider the following inter-leaving of the processes to explain a synchronization issue in the given code to us.
+
+Suppose, a reader comes, acquires the loc. Then it uses the global semaphore to update the value in the buffer. Let's say that the semaphore count is such that it can allow more than 1 process to go and update the buffer value. This process, when executing the buffer_add function got preempted after executing the memcpy line to update the time to the buffer with new value. But, it is now preempted because the quantum of this process gets completed.
+
+A new reader process starts acquiring the lock and gets the semaphore to udpate the buffer also. Let's consider that this process had enough quantum to execute the buffer_add function that it executed the memcpy function and overwrites the time into the buffer, as the ealier process was not able to increment the buffer length value so it will start from the same place as the earlier process wrote to and consequently increment the length of the buffer as well and add the null character to the end as well. Now, the process gets preempted so that the earlier process is scheduled again.
+
+The older process last executed the memcpy before leaving. Since, the process still thinks that it last wrote the time to the same buffer, it has to increment the value of buffer length. But, the older process overwrote the buffer and now, the increment in the buffer length will just add junk characters to the actual buffer. Thus, this will cause a synchronization issue as the buffer length is not incremented at the same time when the process tries to copy the data to the buffer because of the above mentioned inter-leaving of the processes due to scheduling.
